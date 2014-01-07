@@ -26,7 +26,6 @@ def test_ia_metadata_formats():
     proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
     stdout, stderr = proc.communicate()
     test_output = '\n'.join([
-        "Unknown",
         "Archive BitTorrent",
         "Metadata\n",
     ])
@@ -39,7 +38,7 @@ def test_ia_metadata_target():
     test_output = "iacli_test_item\n"
     assert stdout == test_output
 
-@pytest.mark.skipif('len(internetarchive.config.get_cookiejar()) == 0',
+@pytest.mark.skipif('internetarchive.config.get_config().get("cookies") == {}',
                     reason='requires authorization.')
 def test_ia_metadata_modify():
     # Modify test item.
