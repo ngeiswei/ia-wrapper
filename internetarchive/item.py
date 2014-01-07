@@ -110,20 +110,20 @@ class Item(object):
 
     # get_files()
     #_____________________________________________________________________________________
-    def get_files(self, files=None, source=None, formats=None, glob_pattern=None):
-        files = [] if files is None else files
-
-        _files = list(self.iter_files())
+    def get_files(self, files=[], source=None, formats=None, glob_pattern=None):
+        if not isinstance(files, (list, tuple, set)):
+            files = [files]
+        _files = [f for f in list(self.iter_files()) if f.name in files]
         if source:
             if not isinstance(source, (list, tuple, set)):
                 source = [source]
-            _files = [f for f in _files if f.source in source and f.name not in files]
+            _files = [f for f in _files if f.source in source]
         if formats:
             if not isinstance(formats, (list, tuple, set)):
                 formats = [formats]
-            _files = [f for f in _files if f.format in formats and f.name not in files]
+            _files = [f for f in _files if f.format in formats]
         if glob_pattern:
-            _files = [f for f in _files if fnmatch(f.name, glob_pattern) and f.name not in files]
+            _files = [f for f in _files if fnmatch(f.name, glob_pattern)]
         return _files
 
     # modify_metadata()
