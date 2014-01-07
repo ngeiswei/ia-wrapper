@@ -359,7 +359,7 @@ class Item(object):
                     """)
 
         # Filter files, first by source, then by formats, finally by glob_pattern.
-        files = [File(self.__dict__, f) for f in self.files]
+        files = list(self.iter_files())
         if source:
             if not isinstance(source, (list, tuple, set)):
                 source = [source]
