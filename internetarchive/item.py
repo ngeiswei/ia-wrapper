@@ -87,6 +87,7 @@ class Item(object):
 
         """
         url = '{protocol}//archive.org/metadata/{identifier}'.format(**self.__dict__)
+        kwargs = dict((k,v) for (k,v) in kwargs.items() if k in self.session.__attrs__)
         resp = self.session.get(url, **kwargs)
         if resp.status_code != 200:
             raise ConnectionError("Unable connect to Archive.org "
@@ -160,11 +161,8 @@ class Item(object):
                   returned from the Metadata API.
 
         """
-        self.session.add_s3_auth(access_key=kwargs.get('access_key'),
-                                 secret_key=kwargs.get('secret_key'))
-        access_key = self.session.auth.access_key
-        secret_key = self.session.auth.secret_key
-
+        access_key = self.session.config.get('s3', {}).get('access_key')
+        secret_key = self.session.config.get('s3', {}).get('secret_key')
         src = self.metadata.get(target, {})
         dest = src.copy()
         dest.update(metadata)
@@ -197,7 +195,7 @@ class Item(object):
         http.send(data)
         status_code, error_message, headers = http.getreply()
         resp_file = http.getfile()
-        self.get_metadata()
+        self._metadata = self.get_metadata()
         return dict(
             status_code=status_code,
             content=json.loads(resp_file.read()),
