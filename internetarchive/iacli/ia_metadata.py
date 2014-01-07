@@ -3,7 +3,7 @@
 usage: 
     ia metadata [--modify=<key:value>... ] [--target=<target>] <identifier>
     ia metadata [--append=<key:value>... ] [--target=<target>] <identifier>
-    ia metadata [--exists | --formats | --files | --target=<target>...] <identifier>
+    ia metadata [--exists | --formats | --target=<target>...] <identifier>
     ia metadata --help
 
 options:
@@ -12,7 +12,6 @@ options:
     -a, --append=<key:value>   Append metadata to an element.
     -e, --exists               Check if an item exists.  exists, and 1 if it 
                                does not.
-    -f, --files                Return select file-level metadata.
     -F, --formats              Return the file-formats the given item contains.
     -t, --target=<target>...   Return specified target, only.
 
@@ -23,7 +22,7 @@ from json import dumps
 from docopt import docopt
 
 from internetarchive import get_item, modify_metadata
-from iacli.argparser import get_args_dict
+from internetarchive.iacli.argparser import get_args_dict
 
 
 
@@ -56,15 +55,8 @@ def main(argv):
         stdout.write('success: {0}\n'.format(response['content']['log']))
 
     # Get metadata.
-    elif args['--files']:
-        for i, f in enumerate(item.files()):
-            if not args['--target']:
-                files_md = [f.identifier, f.name, f.source, f.format, f.size, f.md5]
-            else:
-                files_md = [f.__dict__.get(k) for k in args['--target']]
-            stdout.write('\t'.join([str(x) for x in files_md]) + '\n')
     elif args['--formats']:
-        formats = set([f.format for f in item.files()])
+        formats = set([f.get('format') for f in item.files])
         stdout.write('\n'.join(formats) + '\n')
     elif args['--target']:
         metadata = []
@@ -72,7 +64,7 @@ def main(argv):
             if '/' in key:
                 for i, k in enumerate(key.split('/')):
                     if i == 0:
-                        md = item.metadata.get(k)
+                        md = item._metadata.get(k)
                     else:
                         if md:    
                             md = md.get(k)

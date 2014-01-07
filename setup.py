@@ -11,13 +11,13 @@ if version_info >= (3,):
 
 setup(
     name='internetarchive',
-    version='0.4.9',
+    version='0.5.0',
     author='Jacob M. Johnson',
     author_email='jake@archive.org',
-    packages=['internetarchive', 'iacli'],
+    packages=['internetarchive'],
     entry_points = {
         'console_scripts': [
-            'ia = iacli.ia:main',
+            'ia = internetarchive.iacli.ia:main',
         ],
     },
     url='https://github.com/jjjake/ia-wrapper',
@@ -30,6 +30,7 @@ setup(
         'pytest==2.3.4',
         'docopt==0.6.1',
         'PyYAML==3.10',
+        'six==1.4.1',
     ],
     dependency_links=[
         'https://github.com/downloads/surfly/gevent/gevent-1.0rc2.tar.gz#egg=gevent-1.0.rc2',

@@ -3,33 +3,35 @@ import os, sys
 inc_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, inc_path)
 
-import internetarchive
+import internetarchive.models
 
 def test_build_headers():
+    r = internetarchive.models.S3Request()
 
-    metadata = {
-            'collection': 'test_collection',
-            'foo': u'தமிழ்',
-            'subject': ['foo', 'bar', 'baz'],
-            'bar': 13,
-            'boo': {'test': 'dict'},
-            'none': None,
-            'none2': False,
-            'test_foo': 'underscore',
+    r.metadata = {
+        'collection': 'test_collection',
+        'foo': u'தமிழ்',
+        'subject': ['foo', 'bar', 'baz'],
+        'bar': 13,
+        'boo': {'test': 'dict'},
+        'none': None,
+        'none2': False,
+        'test_foo': 'underscore',
     }
-    headers = {
-            'x-archive-size-hint': 19327352832,
-            'x-archive-test-header': 'test value',
+    r.headers = {
+        'x-archive-size-hint': 19327352832,
+        'x-archive-test-header': 'test value',
     }
 
-    s3_headers = internetarchive.s3.build_headers(metadata=metadata, headers=headers)
+    p = r.prepare()
+    s3_headers = p.headers
 
     test_output = {
             # str test.
             'x-archive-meta00-collection': 'test_collection',
 
             # unicode test.
-            'x-archive-meta00-foo': '\xe0\xae\xa4\xe0\xae\xae\xe0\xae\xbf\xe0\xae\xb4\xe0\xaf\x8d',
+            'x-archive-meta00-foo': u'தமிழ்',
 
             # int test
             'x-archive-meta00-bar': 13,

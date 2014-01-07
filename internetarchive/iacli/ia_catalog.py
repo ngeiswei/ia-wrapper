@@ -18,7 +18,7 @@ from urlparse import urlparse, parse_qs
 
 from docopt import docopt
 
-from internetarchive import Catalog, get_tasks
+from internetarchive import get_tasks
 
 
 

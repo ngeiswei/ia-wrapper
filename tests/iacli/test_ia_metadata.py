@@ -21,12 +21,6 @@ def test_ia_metadata_exists():
     stdout, stderr = proc.communicate()
     assert proc.returncode == 0
 
-def test_ia_metadata_files():
-    cmd = 'ia metadata --files iacli_test_item'
-    proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = proc.communicate()
-    assert proc.returncode == 0
-
 def test_ia_metadata_formats():
     cmd = 'ia metadata --formats iacli_test_item'
     proc = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)

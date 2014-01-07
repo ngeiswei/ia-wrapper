@@ -19,7 +19,6 @@ from docopt import docopt
 from internetarchive import get_data_miner
 
 
-
 # ia_mine()
 #_________________________________________________________________________________________
 def main(argv):

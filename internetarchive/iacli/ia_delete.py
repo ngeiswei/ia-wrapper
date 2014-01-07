@@ -22,7 +22,7 @@ from xml.dom.minidom import parseString
 from docopt import docopt
 
 from internetarchive import Item
-from iacli.argparser import get_xml_text
+from internetarchive.iacli.argparser import get_xml_text
 
 
 
