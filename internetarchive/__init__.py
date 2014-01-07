@@ -23,6 +23,6 @@ __license__ = 'GPL'
 __copyright__ = 'Copyright 2013 Jacob M. Johnson'
 
 from .api import (
-    get_item, get_files, download, modify_metadata, upload, delete, get_tasks, 
+    get_item, get_file, get_files, download, modify_metadata, upload, delete, get_tasks,
     get_data_miner
 )

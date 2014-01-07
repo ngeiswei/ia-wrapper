@@ -7,9 +7,13 @@ SESSION = internetarchive.session.ArchiveSession()
 def get_item(identifier, **kwargs):
     return SESSION.get_item(identifier, **kwargs)
 
-def get_files(identifier, file_name, **kwargs):
+def get_file(identifier, file_name, **kwargs):
     item = get_item(identifier, **kwargs)
     return item.get_file(file_name)
+
+def get_files(identifier, file_name, **kwargs):
+    item = get_item(identifier, **kwargs)
+    return item.get_files(file_name)
 
 def download(identifier, **kwargs):
     item = get_item(identifier, **kwargs)

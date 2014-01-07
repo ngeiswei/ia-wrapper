@@ -108,6 +108,13 @@ class Item(object):
         for f in self.files:
             yield File(self, f.get('name'))
 
+    # get_file()
+    #_____________________________________________________________________________________
+    def get_file(self, filename):
+        for f in self.files:
+            if f.get('name') == filename: 
+                return File(self, f.get('name'))
+
     # get_files()
     #_____________________________________________________________________________________
     def get_files(self, files=[], source=None, formats=None, glob_pattern=None):
