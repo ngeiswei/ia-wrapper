@@ -12,17 +12,17 @@ SESSION = internetarchive.session.ArchiveSession()
 
 
 def test_item():
-    item = SESSION.get_item('stairs')
+    item = SESSION.get_item('nasa')
     assert isinstance(item.session, internetarchive.session.ArchiveSession)
     assert any(s == item.protocol for s in ['http:', 'https:'])
-    assert item.identifier == 'stairs'
+    assert item.identifier == 'nasa'
     assert item.exists == True
     metadata_api_keys = [
         'files', 'updated', 'uniq', 'created', 'server', 'reviews', 'item_size', 'dir',
         'metadata', 'd2', 'files_count', 'd1'
     ]
     assert all(k in item.__dict__ for k in metadata_api_keys)
-    assert item.metadata['title'] == 'stairs where i worked'
+    assert item.metadata['title'] == 'NASA Images'
 
 def test_get_metadata():
     item = SESSION.get_item('nasa')
@@ -30,8 +30,8 @@ def test_get_metadata():
     assert md['metadata']['title'] == item.metadata['title']
 
 def test_get_file():
-    item = SESSION.get_item('stairs')
-    filename = 'glogo.png'
+    item = SESSION.get_item('nasa')
+    filename = 'NASAarchiveLogo.jpg'
     file = item.get_file(filename)
 
     assert not os.path.exists(filename)
@@ -41,7 +41,7 @@ def test_get_file():
     os.unlink(filename)
 
 def test_download():
-    item = SESSION.get_item('stairs')
+    item = SESSION.get_item('nasa')
     item_dir = item.identifier
     assert not os.path.exists(item_dir)
     item.download()
