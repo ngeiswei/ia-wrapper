@@ -2,7 +2,8 @@ try:
     import ujson as json
 except ImportError:
     import json
-import urllib2
+from six.moves.urllib.parse import parse_qsl
+from six.moves.urllib.request import urlopen
 
 from requests import Session
 
@@ -95,7 +96,7 @@ class CatalogTask(object):
             if a: setattr(self, a, v)
         # special handling for 'args' - parse it into a dict if it is a string
         if isinstance(self.args, basestring):
-            self.args = dict(x for x in urllib2.urlparse.parse_qsl(self.args))
+            self.args = dict(x for x in parse_qsl(self.args))
 
     def __repr__(self):
         return ('CatalogTask(identifier={identifier},'
@@ -116,4 +117,4 @@ class CatalogTask(object):
         if self.task_id is None:
             raise ValueError('task_id is None')
         url = 'http://catalogd.archive.org/log/{0}'.format(self.task_id)
-        return urllib2.urlopen(url)
+        return urlopen(url)

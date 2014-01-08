@@ -5,7 +5,7 @@ try:
 except ImportError:
     import json
 from fnmatch import fnmatch
-import httplib
+from six.moves import http_client
 from six.moves.urllib.parse import urlencode
 import six
 
@@ -185,7 +185,7 @@ class Item(object):
 
         host = 'archive.org'
         path = '/metadata/{0}'.format(self.identifier)
-        http = httplib.HTTP(host)
+        http = http_client.HTTP(host)
         http.putrequest("POST", path)
         http.putheader("Host", host)
         data = urlencode(data)
@@ -378,13 +378,12 @@ class Item(object):
 
         responses = []
         for f in files:
-            fname = f.name.encode('utf-8')
-            path = os.path.join(self.identifier, fname)
+            path = os.path.join(self.identifier, f.name)
             if dry_run:
                 sys.stdout.write(f.url + '\n')
                 continue
             if verbose:
-                sys.stdout.write(' downloading: {0}\n'.format(fname))
+                sys.stdout.write(' downloading: {0}\n'.format(f.name))
             if concurrent:
                 responses.append(
                     pool.spawn(f.download, path, ignore_existing=ignore_existing))
