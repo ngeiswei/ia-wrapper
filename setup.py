@@ -2,13 +2,9 @@ from setuptools import setup
 import sys
 
 
-if sys.version_info >= (3,):
-    sys.stderr.write('Python3 is not yet supported.\n')
-    sys.exit(1)
-
 setup(
     name='internetarchive',
-    version='0.5.0',
+    version='0.5.1',
     author='Jacob M. Johnson',
     author_email='jake@archive.org',
     packages=['internetarchive'],
