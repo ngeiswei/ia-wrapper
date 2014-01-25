@@ -12,8 +12,9 @@ import six
 import jsonpatch
 from requests.exceptions import ConnectionError, HTTPError
 from requests import Request
+from clint.textui import progress
 
-from . import __version__
+from . import __version__, utils
 
 
 # Item class
@@ -259,19 +260,36 @@ class Item(object):
         key = body.name.split('/')[-1] if key is None else key
         base_url = '{protocol}//s3.us.archive.org/identifier'.format(**self.__dict__)
         url = '{base_url}/{key}'.format(base_url=base_url, key=key)
-        request = S3Request(
-            method='PUT', 
-            url=url, 
-            headers=headers, 
-            data=body,
-            metadata=metadata,
-            queue_derive=queue_derive,
+        headers = s3.build_headers(metadata=metadata, 
+                                   headers=headers, 
+                                   queue_derive=queue_derive,
+                                   auto_make_bucket=True,
+                                   size_hint=size,
+                                   ignore_preexisting_bucket=ignore_preexisting_bucket)
+        if verbose:
+            try:
+                chunk_size = 1024
+                expected_size = size/chunk_size + 1
+                chunks = utils.chunk_generator(body, chunk_size)
+                progress_generator = progress.bar(chunks, expected_size=expected_size, 
+                                                  label=' uploading {f}: '.format(f=key))
+                data = utils.IterableToFileAdapter(progress_generator, size)
+            except:
+                sys.stdout.write(' uploading {f}: '.format(f=key))
+                data = body
+        else:
+            data = body 
+
+        request = Request(
+            method='PUT',
+            url=url,
+            headers=headers,
+            data=data,
+            auth=s3.BasicAuth(access_key, secret_key),
         )
         if debug:
             return request
         else:
-            if verbose:
-                sys.stdout.write(' uploading: {id}\n'.format(id=key))
             prepared_request = request.prepare()
             return self.session.send(prepared_request, stream=True, access_key=access_key,
                                      secret_key=secret_key)
@@ -478,10 +496,12 @@ class File(object):
         cascade_delete = 0 if False else 1
         headers['cascade_delete'] = cascade_delete
         url = 'http://s3.us.archive.org/{0}/{1}'.format(self.identifier, self.name)
+        access_key, secret_key = config.get_s3_keys()
         request = Request(
             method='DELETE',
             url=url,
             headers=headers,
+            auth=s3.BasicAuth(access_key, secret_key),
         )
         if debug:
             return request
