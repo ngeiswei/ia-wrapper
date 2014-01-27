@@ -2,9 +2,7 @@
 """A command line interface for Archive.org.
 
 usage:
-    ia [--debug] <command> [<args>...]
-    ia --help
-    ia --version
+    ia [--debug | --help | --version] [<command>] [<args>...]
 
 options:
     -h, --help
@@ -64,14 +62,7 @@ def main():
 
     argv = [cmd] + args['<args>']
 
-    if cmd == 'help':
-        if not args['<args>']:
-            subprocess.call(['ia', '--help'])
-        else:
-            subprocess.call(['ia', args['<args>'][0], '--help'])
-        sys.exit(0)
-
-    if cmd == 'help':
+    if cmd == 'help' or not cmd:
         if not args['<args>']:
             subprocess.call(['ia', '--help'])
         else:
