@@ -23,15 +23,17 @@ class Item(object):
     """This class represents an archive.org item. You can use this
     class to access item metadata::
 
-        >>> import internetarchive
-        >>> item = internetarchive.Item('stairs')
-        >>> print item.metadata
+        >>> import internetarchive.session
+        >>> s = internetarchive.session.get_session()
+        >>> item = s.get_item('stairs')
+        >>> print item.metadata['title']
+        u'stairs where i worked'
 
     Or to modify the metadata for an item::
 
-        >>> metadata = dict(title='The Stairs')
-        >>> item.modify(metadata)
-        >>> print item.metadata['metadata']['title']
+        >>> md = dict(title='The Stairs')
+        >>> item.modify_metadata(md)
+        >>> print item.metadata['title']
         u'The Stairs'
 
     This class also uses IA's S3-like interface to upload files to an
@@ -39,15 +41,15 @@ class Item(object):
     variables in order to upload::
 
         >>> import os
-        >>> os.environ['AWS_ACCESS_KEY_ID'] = 'Y6oUrAcCEs4sK8ey'
-        >>> os.environ['AWS_SECRET_ACCESS_KEY'] = 'youRSECRETKEYzZzZ'
-        >>> item.upload('myfile.tar')
+        >>> access, secret = ('Y6oUrAcCEs4sK8ey', 'youRSECRETKEYzZzZ')
+        >>> item.upload('myfile.tar', access_key=access, secret_key=secret)
         True
 
     You can retrieve S3 keys here: `https://archive.org/account/s3.php
     <https://archive.org/account/s3.php>`__
 
     """
+
     # init()
     #_____________________________________________________________________________________
     def __init__(self, session, identifier, **kwargs):
@@ -204,8 +206,8 @@ class Item(object):
 
     # _upload_file()
     #_____________________________________________________________________________________
-    def _upload_file(self, body, key=None, metadata={}, headers={}, verbose=False,
-                     debug=False, **kwargs):
+    def _upload_file(self, body, key=None, metadata={}, headers={}, access_key=None,
+                           secret_key=None, verbose=False, debug=False, **kwargs):
         """Upload a single file to an item. The item will be created
         if it does not exist.
 
