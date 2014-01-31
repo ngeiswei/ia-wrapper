@@ -43,3 +43,11 @@ class ArchiveSession(requests.sessions.Session):
     #_____________________________________________________________________________________
     def get_catalog(self, **kwargs):
         return internetarchive.catalog.Catalog(self, **kwargs)
+
+
+def get_session(config=None):
+    """
+    Return a new ArchiveSession object
+
+    """
+    return ArchiveSession(config)
