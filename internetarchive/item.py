@@ -79,18 +79,14 @@ class Item(object):
         """Get an item's metadata from the `Metadata API
         <http://blog.archive.org/2013/07/04/metadata-api/>`__
 
-        :type identifier: str
-        :param identifier: Globally unique Archive.org identifier.
-
-        :type target: bool
-        :param target: (optional) Metadata target to retrieve.
+        :param \*\*kwargs: Optional arguments that ``request`` takes.
 
         :rtype: dict
-        :returns: Metadat API response.
+        :returns: Metadat API JSON response.
 
         """
         url = '{protocol}//archive.org/metadata/{identifier}'.format(**self.__dict__)
-        kwargs = dict((k,v) for (k,v) in kwargs.items() if k in self.session.__attrs__)
+        kwargs = dict((k, v) for (k, v) in kwargs.items() if k in self.session.__attrs__)
         resp = self.session.get(url, **kwargs)
         if resp.status_code != 200:
             raise ConnectionError("Unable connect to Archive.org "
@@ -112,30 +108,30 @@ class Item(object):
         for f in self.files:
             yield File(self, f.get('name'))
 
-    # get_file()
-    #_____________________________________________________________________________________
-    def get_file(self, filename):
-        for f in self.files:
-            if f.get('name') == filename: 
-                return File(self, f.get('name'))
-
     # get_files()
     #_____________________________________________________________________________________
-    def get_files(self, files=[], source=None, formats=None, glob_pattern=None):
+    def get_files(self, files=None, source=None, formats=None, glob_pattern=None):
+        files = [] if not files else files
+        source = [] if not source else source
+
         if not isinstance(files, (list, tuple, set)):
             files = [files]
-        _files = [f for f in list(self.iter_files()) if f.name in files]
-        if source:
-            if not isinstance(source, (list, tuple, set)):
-                source = [source]
-            _files = [f for f in _files if f.source in source]
-        if formats:
-            if not isinstance(formats, (list, tuple, set)):
-                formats = [formats]
-            _files = [f for f in _files if f.format in formats]
-        if glob_pattern:
-            _files = [f for f in _files if fnmatch(f.name, glob_pattern)]
-        return _files
+        if not isinstance(source, (list, tuple, set)):
+            source = [source]
+        if not isinstance(formats, (list, tuple, set)):
+            formats = [formats]
+
+        file_objects = []
+        for f in self.iter_files():
+            if f.name in files:
+                file_objects.append(f)
+            elif f.source in source:
+                file_objects.append(f)
+            elif f.format in formats:
+                file_objects.append(f)
+            elif fnmatch(f.name, glob_pattern):
+                file_objects.append(f)
+        return file_objects
 
     # modify_metadata()
     #_____________________________________________________________________________________
