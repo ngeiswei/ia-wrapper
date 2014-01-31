@@ -8,7 +8,7 @@ import internetarchive.session
 inc_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, inc_path)
 
-SESSION = internetarchive.session.ArchiveSession()
+SESSION = internetarchive.session.get_session()
 
 
 def test_item():
