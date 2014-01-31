@@ -203,7 +203,8 @@ class Item(object):
     # _upload_file()
     #_____________________________________________________________________________________
     def _upload_file(self, body, key=None, metadata={}, headers={}, access_key=None,
-                           secret_key=None, verbose=False, debug=False, **kwargs):
+                           secret_key=None, verify=True, verbose=False, debug=False,
+                           **kwargs):
         """Upload a single file to an item. The item will be created
         if it does not exist.
 
@@ -266,6 +267,8 @@ class Item(object):
                                    queue_derive=queue_derive,
                                    auto_make_bucket=True,
                                    ignore_preexisting_bucket=ignore_preexisting_bucket)
+        if verify:
+            headers['Content-MD5'] = utils.get_md5(body)
         if verbose:
             try:
                 chunk_size = 1048576
