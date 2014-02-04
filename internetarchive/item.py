@@ -5,8 +5,6 @@ try:
 except ImportError:
     import json
 from fnmatch import fnmatch
-from six.moves import http_client
-from six.moves.urllib.parse import urlencode
 import six
 
 import jsonpatch
@@ -14,7 +12,7 @@ from requests.exceptions import ConnectionError, HTTPError
 from requests import Request
 from clint.textui import progress
 
-from . import __version__, utils, models
+from . import __version__, utils, iarequest
 
 
 # Item class
@@ -108,6 +106,13 @@ class Item(object):
         for f in self.files:
             yield File(self, f.get('name'))
 
+    # get_file()
+    #_____________________________________________________________________________________
+    def get_file(self, file_name):
+        for f in self.iter_files():
+            if f.name == file_name:
+                return f
+
     # get_files()
     #_____________________________________________________________________________________
     def get_files(self, files=None, source=None, formats=None, glob_pattern=None):
@@ -129,8 +134,9 @@ class Item(object):
                 file_objects.append(f)
             elif f.format in formats:
                 file_objects.append(f)
-            elif fnmatch(f.name, glob_pattern):
-                file_objects.append(f)
+            elif glob_pattern:
+                if fnmatch(f.name, glob_pattern):
+                    file_objects.append(f)
         return file_objects
 
     # modify_metadata()
@@ -191,9 +197,8 @@ class Item(object):
 
     # _upload_file()
     #_____________________________________________________________________________________
-    def _upload_file(self, body, key=None, metadata={}, headers={}, access_key=None,
-                           secret_key=None, verify=True, verbose=False, debug=False,
-                           **kwargs):
+    def _upload_file(self, body, key=None, metadata={}, headers={}, verify=True, 
+                     verbose=False, debug=False, **kwargs):
         """Upload a single file to an item. The item will be created
         if it does not exist.
 
@@ -209,13 +214,8 @@ class Item(object):
         :type headers: dict
         :param headers: (optional) Add additional IA-S3 headers to request.
 
-        :type queue_derive: bool
-        :param queue_derive: (optional) Set to False to prevent an item from
-                             being derived after upload.
-
-        :type ignore_preexisting_bucket: bool
-        :param ignore_preexisting_bucket: (optional) Destroy and respecify the
-                                          metadata for an item
+        :type verify: bool
+        :param verify: Set Content-MD5 header to verify data after upload.
 
         :type verbose: bool
         :param verbose: (optional) Print progress to stdout.
@@ -267,7 +267,7 @@ class Item(object):
         else:
             data = body 
 
-        request = models.S3Request(
+        request = iarequest.S3Request(
             method='PUT',
             url=url,
             headers=headers,
@@ -275,6 +275,7 @@ class Item(object):
             metadata=metadata,
             access_key=self.session.access_key,
             secret_key=self.session.secret_key,
+            **kwargs
         )
         if debug:
             return request
@@ -486,11 +487,12 @@ class File(object):
         cascade_delete = 0 if False else 1
         headers['cascade_delete'] = cascade_delete
         url = 'http://s3.us.archive.org/{0}/{1}'.format(self.identifier, self.name)
-        access_key, secret_key = config.get_s3_keys()
-        request = Request(
+        request = iarequest.S3Request(
             method='DELETE',
             url=url,
             headers=headers,
+            access_key=self.session.access_key,
+            secret_key=self.session.secret_key,
         )
         if debug:
             return request

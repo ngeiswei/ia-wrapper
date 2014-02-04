@@ -5,8 +5,6 @@ except ImportError:
 from six.moves.urllib.parse import parse_qsl
 from six.moves.urllib.request import urlopen
 
-from requests import Session
-
 
 #_________________________________________________________________________________________
 class Catalog(object):

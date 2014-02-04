@@ -3,10 +3,10 @@ import os, sys
 inc_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, inc_path)
 
-import internetarchive.models
+import internetarchive.iarequest
 
 def test_build_headers():
-    r = internetarchive.models.S3Request()
+    r = internetarchive.iarequest.S3Request(url='https://s3.us.archive.org/iacli-test-item')
 
     r.metadata = {
         'collection': 'test_collection',
@@ -55,6 +55,7 @@ def test_build_headers():
             # Automatically added.
             'x-archive-meta-scanner': 'Internet Archive Python library {0}'.format(internetarchive.__version__),
             'x-archive-auto-make-bucket': 1,
+            'Content-Length': '0',
     }
 
     for key, value in s3_headers.items():

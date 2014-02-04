@@ -52,10 +52,11 @@ def main(argv):
     item = get_item(identifier)
 
     if files:
-        for f in files:
-            fname = f.encode('utf-8')
+        for f in item.iter_files():
+            if f.name not in files:
+                continue
+            fname = f.name.encode('utf-8')
             path = os.path.join(identifier, fname)
-            f = item.get_file(fname)
             if args['--dry-run']:
                 sys.stdout.write(f.url + '\n')
             else:
@@ -64,7 +65,7 @@ def main(argv):
         sys.exit(0)
 
     # Otherwise, download the entire item.
-    if args['--source']:
+    elif args['--source']:
         ia_source = args['--source']
     elif args['--original']:
         ia_source = ['original']
