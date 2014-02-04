@@ -15,7 +15,6 @@ options:
 
 """
 from sys import stdout, exit
-from urlparse import urlparse, parse_qs
 
 from docopt import docopt
 

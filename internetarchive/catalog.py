@@ -39,7 +39,8 @@ class Catalog(object):
     def get_tasks(self):
         r = self.session.get(self.url, params=self.params)
         # Convert JSONP to JSON (then parse the JSON).
-        json_str = r.content[(r.content.index("(") + 1):r.content.rindex(")")]
+        r_str = r.content.decode('utf-8')
+        json_str = r_str[(r_str.index("(") + 1):r_str.rindex(")")]
         return [CatalogTask(t) for t in json.loads(json_str)]
 
 

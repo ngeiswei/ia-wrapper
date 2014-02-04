@@ -1,4 +1,5 @@
 import internetarchive.session
+import internetarchive.catalog
 
 
 SESSION = internetarchive.session.ArchiveSession()

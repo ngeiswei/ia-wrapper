@@ -40,6 +40,11 @@ class ArchiveSession(requests.sessions.Session):
     def get_item(self, identifier, **kwargs):
         return internetarchive.item.Item(self, identifier, **kwargs)
 
+    # get_catalog()
+    #_____________________________________________________________________________________
+    def get_catalog(self, **kwargs):
+        return internetarchive.catalog.Catalog(self, **kwargs)
+
 
 def get_session(config=None):
     """
