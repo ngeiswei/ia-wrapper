@@ -52,9 +52,20 @@ class S3PreparedRequest(requests.models.PreparedRequest):
 
     # prepare()
     #_____________________________________________________________________________________
-    def prepare(self, metadata={}, queue_derive=None, **kwargs):
-        super(S3PreparedRequest, self).prepare
-        self.prepare_headers(kwargs.get('headers'), metadata)
+    def prepare(self, method=None, url=None, headers=None, files=None, data=None,
+                params=None, auth=None, cookies=None, hooks=None, queue_derive=None,
+                metadata={}):
+        self.prepare_method(method);
+        self.prepare_url(url, params)
+        self.prepare_headers(headers, metadata)
+        self.prepare_cookies(cookies)
+        self.prepare_body(data, files)
+        self.prepare_auth(auth, url)
+        # Note that prepare_auth must be last to enable authentication schemes
+        # such as OAuth to work on a fully prepared request.
+
+        # This MUST go after prepare_auth. Authenticators could add a hook
+        self.prepare_hooks(hooks)
 
     # prepare_headers()
     #_____________________________________________________________________________________

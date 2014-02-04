@@ -40,7 +40,7 @@ def main(argv):
     verbose = True if args['--quiet'] == False else False
 
     if verbose != False:
-        stdout.write('getting item: {0}\n'.format(args['<identifier>']))
+        sys.stdout.write('getting item: {0}\n'.format(args['<identifier>']))
 
     headers = get_args_dict(args['--header'])
     if args['--size-hint']:

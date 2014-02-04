@@ -47,12 +47,12 @@ def main(argv):
         metadata_args = args['--modify'] if args['--modify'] else args['--append']
         metadata = get_args_dict(metadata_args)
         response = modify_metadata(args['<identifier>'], metadata, append=append)
-        status_code = response['status_code']
-        if not response['content']['success']:
-            error_msg = response['content']['error']
+        status_code = response.status_code
+        if not response.json()['success']:
+            error_msg = response.json()['error']
             stderr.write('error: {0} ({1})\n'.format(error_msg, status_code))
             exit(1)
-        stdout.write('success: {0}\n'.format(response['content']['log']))
+        stdout.write('success: {0}\n'.format(response.json()['log']))
 
     # Get metadata.
     elif args['--formats']:

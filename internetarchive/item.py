@@ -14,7 +14,7 @@ from requests.exceptions import ConnectionError, HTTPError
 from requests import Request
 from clint.textui import progress
 
-from . import __version__, utils
+from . import __version__, utils, models
 
 
 # Item class
@@ -135,7 +135,8 @@ class Item(object):
 
     # modify_metadata()
     #_____________________________________________________________________________________
-    def modify_metadata(self, metadata, target='metadata', append=False, **kwargs):
+    def modify_metadata(self, metadata, target='metadata', append=False, debug=False, 
+                              **kwargs):
         """Modify the metadata of an existing item on Archive.org.
 
         Note: The Metadata Write API does not yet comply with the
@@ -160,8 +161,6 @@ class Item(object):
                   returned from the Metadata API.
 
         """
-        access_key = self.session.config.get('s3', {}).get('access_key')
-        secret_key = self.session.config.get('s3', {}).get('secret_key')
         src = self.metadata.get(target, {})
         dest = src.copy()
         dest.update(metadata)
@@ -174,31 +173,21 @@ class Item(object):
                 dest[key] = '{0} {1}'.format(src[key], val)
 
         json_patch = jsonpatch.make_patch(src, dest).patch
-
         data = {
             '-patch': json.dumps(json_patch),
             '-target': target,
-            'access': access_key,
-            'secret': secret_key,
+            'access': self.session.access_key,
+            'secret': self.session.secret_key,
         }
 
-        host = 'archive.org'
-        path = '/metadata/{0}'.format(self.identifier)
-        http = http_client.HTTP(host)
-        http.putrequest("POST", path)
-        http.putheader("Host", host)
-        data = urlencode(data)
-        http.putheader("Content-Type", 'application/x-www-form-urlencoded')
-        http.putheader("Content-Length", str(len(data)))
-        http.endheaders()
-        http.send(data)
-        status_code, error_message, headers = http.getreply()
-        resp_file = http.getfile()
+        url = '{protocol}//archive.org/metadata/{identifier}'.format(**self.__dict__)
+        request = Request(method='POST', url=url, data=data)
+        if debug:
+            return request
+        prepared_request = request.prepare()
+        resp = self.session.send(prepared_request)
         self._metadata = self.get_metadata()
-        return dict(
-            status_code=status_code,
-            content=json.loads(resp_file.read()),
-        )
+        return resp
 
     # _upload_file()
     #_____________________________________________________________________________________
@@ -260,13 +249,8 @@ class Item(object):
             headers['x-archive-size-hint'] = size
 
         key = body.name.split('/')[-1] if key is None else key
-        base_url = '{protocol}//s3.us.archive.org/identifier'.format(**self.__dict__)
+        base_url = '{protocol}//s3.us.archive.org/{identifier}'.format(**self.__dict__)
         url = '{base_url}/{key}'.format(base_url=base_url, key=key)
-        headers = s3.build_headers(metadata=metadata, 
-                                   headers=headers, 
-                                   queue_derive=queue_derive,
-                                   auto_make_bucket=True,
-                                   ignore_preexisting_bucket=ignore_preexisting_bucket)
         if verify:
             headers['Content-MD5'] = utils.get_md5(body)
         if verbose:
@@ -283,19 +267,20 @@ class Item(object):
         else:
             data = body 
 
-        request = Request(
+        request = models.S3Request(
             method='PUT',
             url=url,
             headers=headers,
             data=data,
-            auth=s3.BasicAuth(access_key, secret_key),
+            metadata=metadata,
+            access_key=self.session.access_key,
+            secret_key=self.session.secret_key,
         )
         if debug:
             return request
         else:
             prepared_request = request.prepare()
-            return self.session.send(prepared_request, stream=True, access_key=access_key,
-                                     secret_key=secret_key)
+            return self.session.send(prepared_request, stream=True)
 
     # upload()
     #_____________________________________________________________________________________
@@ -324,12 +309,12 @@ class Item(object):
 
         """
         if not isinstance(files, (dict, list, tuple, set)):
-            files = [(None, files)]
+            files = [files]
         if isinstance(files, dict):
             files = files.items()
 
         responses = []
-        for key, body in files:
+        for body in files:
             if isinstance(body, six.string_types) and os.path.isdir(body):
                 for path, __, files in os.walk(body):
                     for f in files:
@@ -337,7 +322,9 @@ class Item(object):
                         key = os.path.relpath(filepath, body)
                         responses.append(self._upload_file(filepath, key=key, **kwargs))
             else:
-                responses = self._upload_file(body, key=key, **kwargs)
+                if not isinstance(body, six.string_types) and len(body) == 2:
+                    key, body = body
+                    responses = self._upload_file(body, key=key, **kwargs)
         return responses
 
     # download()
@@ -504,7 +491,6 @@ class File(object):
             method='DELETE',
             url=url,
             headers=headers,
-            auth=s3.BasicAuth(access_key, secret_key),
         )
         if debug:
             return request
